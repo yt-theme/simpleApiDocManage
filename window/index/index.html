@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Doc</title>
+    <link rel="stylesheet" type="text/css" href="../../pubUI.css"/>
+</head>
+<body>
+    <div class="header">
+        <span class="header_item" onclick="addProject()">+添加项目</span>
+    </div>
+    <div class="block_container">
+        <ul id="block_list" class="block_list">
+
+        </ul>
+    </div>
+
+
+    <script>
+        const { ipcRenderer } = require("electron")
+        const { db_project } = require("../../mainProcessFunc/nedb.js")
+
+        window.onload = () => {
+            createList()
+        }
+
+        // 监听刷新事件
+        ipcRenderer.on("index_refresh", (event, arg) => {
+
+            createList()
+        })
+
+        function createList () {
+            const targetListDom = document.getElementById("block_list")
+            let tmp_list = ''
+            db_project.find({}, (err, docs) => {
+              console.log("aaa ===>", err)
+
+                if (err == null) {
+                    for (let i=0; i<docs.length; i++) {
+                        tmp_list += `
+                            <li class="block_list_item" ids="${docs[i]._id}" style="background:url(${docs[i].img})">
+                                <div>${docs[i].name}</div>
+                                <div>${docs[i].describe}</div>
+                                <div>${docs[i].create_time}</div>
+                                <div onclick="exportXlsx('${docs[i]._id}')">导出为xlsx</div>
+                            </li>
+                        `
+                    }
+                    targetListDom.innerHTML = tmp_list
+                }
+            })
+        }
+
+        function addProject () {
+            ipcRenderer.send("createWindow", {
+                "window": "projectAddEdit",
+                "data": {
+                    "mode": "add"
+                }
+            })
+        }
+
+        function exportXlsx (_id) {
+
+        }
+
+
+    </script>
+
+</body>
+</html>

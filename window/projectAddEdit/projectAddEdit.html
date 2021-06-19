@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>添加编辑项目</title>
+    <link rel="stylesheet" type="text/css" href="../../pubUI.css"/>
+</head>
+<body>
+    <div class="">
+        <ul class="form_container">
+            <li class="form_item">
+                <span class="label">项目名称</span>
+                <input id="projectName" class="input"/>
+            </li>
+            <li class="form_item">
+                <span class="label">简介</span>
+                <input id="describe" class="input"/>
+            </li>
+            <li class="form_item">
+                <span class="label">domain</span>
+                <input id="domain" class="input"/>
+            </li>
+            <li class="form_item" style="margin-top: 33px">
+                <span class="label"></span>
+                <button class="button" onclick="save()">确定</button>
+            </li>
+        </ul>
+    </div>
+    <script>
+        const { ipcRenderer, remote } = require("electron")
+        const { db_project } = require("../../mainProcessFunc/nedb.js")
+
+        let mode = ''
+        ipcRenderer.on('data',(event, obj) => {
+            mode = obj.mode
+            if (mode == 'add') {
+                document.title = "添加项目"
+            }
+            else if (mode == 'edit') {
+                document.title = "编辑项目"
+            }
+        })
+
+        function save () {
+            const name      = document.getElementById("projectName").value
+            if (!name) {
+                return false
+            }
+            const describe  = document.getElementById("describe").value
+            const domain    = document.getElementById("domain").value
+
+            db_project.insert({
+                "img": "",
+                "name": name,
+                "describe": describe,
+                "domain": domain,
+                "create_time": new Date().getTime()
+            }, (err, docs) => {
+                if (err == null) {
+                    // 关闭此窗口
+                    remote.getCurrentWindow().close()
+                    // 通知主窗口更新数据
+                    ipcRenderer.send("call_index_refresh", { "window": "" })
+                }
+            })
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+Arguments: 
+  /usr/bin/node /usr/bin/yarn add electron-squirrel-startup
+
+PATH: 
+  /home/stu/pro/electron/apiDocManage/node_modules/.bin:/home/stu/pro/electron/node_modules/.bin:/home/stu/pro/node_modules/.bin:/home/stu/node_modules/.bin:/home/node_modules/.bin:/node_modules/.bin:/usr/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin:/home/stu/pro/electron/apiDocManage/node_modules/.bin:/home/stu/.cargo/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/home/stu/.local/share/flatpak/exports/bin:/var/lib/flatpak/exports/bin:/usr/lib/jvm/default/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl:/home/stu/.komodoide/12.0/XRE/state:/home/stu/go/bin
+
+Yarn version: 
+  1.22.10
+
+Node version: 
+  12.22.0
+
+Platform: 
+  linux x64
+
+Trace: 
+  Error: ENOENT: no such file or directory, copyfile '/home/stu/.cache/yarn/v6/npm-path-key-3.1.1-581f6ade658cbba65a0d3380de7753295054f375-integrity/node_modules/path-key/index.d.ts' -> '/home/stu/pro/electron/apiDocManage/node_modules/@malept/cross-spawn-promise/node_modules/path-key/index.d.ts'
+
+npm manifest: 
+  {
+    "name": "apidocmanage",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1",
+      "start": "electron-forge start",
+      "package": "electron-forge package",
+      "make": "electron-forge make"
+    },
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+      "@electron-forge/cli": "^6.0.0-beta.57"
+    },
+    "dependencies": {}
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile
