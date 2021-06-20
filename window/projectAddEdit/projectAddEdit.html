@@ -22,7 +22,7 @@
                 <span class="label">domain</span>
                 <input id="domain" class="input"/>
             </li>
-            <li class="form_item" style="margin-top: 33px">
+            <li class="form_item">
                 <span class="label"></span>
                 <button class="button" onclick="save()">确定</button>
             </li>
@@ -32,9 +32,18 @@
         const { ipcRenderer, remote } = require("electron")
         const { db_project } = require("../../mainProcessFunc/nedb.js")
 
+        window.onload = function () {
+            window.win_objs = remote.getGlobal("win_objs")
+            window.win_self_id = ""
+            window.win_parent_id = ""
+        }
+
         let mode = ''
-        ipcRenderer.on('data',(event, obj) => {
-            mode = obj.mode
+        ipcRenderer.on('options',(event, arg) => {
+            window.win_self_id   = arg.relationship.win_self_id   ? arg.relationship.win_self_id   : ''
+            window.win_parent_id = arg.relationship.win_parent_id ? arg.relationship.win_parent_id : ''
+
+            mode = arg.data.mode
             if (mode == 'add') {
                 document.title = "添加项目"
             }
@@ -45,13 +54,13 @@
 
         function save () {
             const name      = document.getElementById("projectName").value
-            if (!name) {
+            if (!name) {    
                 return false
             }
             const describe  = document.getElementById("describe").value
             const domain    = document.getElementById("domain").value
 
-            db_project.insert({
+            db_project().insert({
                 "img": "",
                 "name": name,
                 "describe": describe,
@@ -60,9 +69,10 @@
             }, (err, docs) => {
                 if (err == null) {
                     // 关闭此窗口
-                    remote.getCurrentWindow().close()
+                    // remote.getCurrentWindow().close()
                     // 通知主窗口更新数据
-                    ipcRenderer.send("call_index_refresh", { "window": "" })
+                    ipcRenderer.send("call_index_refresh", { "window_id": window.win_parent_id })
+                    ipcRenderer.send("destoryWindow", { "relationship": { "win_self_id": window.win_self_id } })
                 }
             })
         }

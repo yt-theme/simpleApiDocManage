@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>模块管理</title>
+    <link rel="stylesheet" type="text/css" href="../../pubUI.css"/>
+</head>
+<body>
+    <script>
+        const { ipcRenderer, remote } = require("electron")
+        const { db_module, db_doc } = require("../../mainProcessFunc/nedb.js")
+        const timeToDate = require("../../utils/timestampToDateTime.js")
+
+        window.onload = function () {
+            window.win_objs = remote.getGlobal("win_objs")
+            window.win_self_id = ""
+            window.win_parent_id = ""
+        }
+
+        ipcRenderer.on('options',(event, arg) => {
+            window.win_self_id   = arg.relationship.win_self_id   ? arg.relationship.win_self_id   : ''
+            window.win_parent_id = arg.relationship.win_parent_id ? arg.relationship.win_parent_id : ''
+            document.title = "模块管理（" + arg.data.name + "）"
+        })
+    </script>
+</body>
+</html>

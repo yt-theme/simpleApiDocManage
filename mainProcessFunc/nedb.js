@@ -4,28 +4,36 @@ const db_file_path = path.join(os.homedir(), "simpleDoc")
 const Database = require("nedb")
 
 // project
-const db_project = new Database({ 
-    "filename": path.join(db_file_path, "db_project.db"),
-    "autoload": true
-})
+const db_project = function () {
+    return new Database({ 
+        "filename": path.join(db_file_path, "db_project.db"),
+        "autoload": true
+    })
+}
 
 // doc
-const db_doc = new Database({ 
-    "filename": path.join(db_file_path, "db_doc.db"),
-    "autoload": true
-})
+const db_doc = function () {
+    new Database({ 
+        "filename": path.join(db_file_path, "db_doc.db"),
+        "autoload": true
+    })
+}
 
 // module
-const db_module = new Database({ 
-    "filename": path.join(db_file_path, "db_module.db"),
-    "autoload": true
-})
+const db_module = function () {
+    new Database({ 
+        "filename": path.join(db_file_path, "db_module.db"),
+        "autoload": true
+    })
+}
 
 // setting
-const db_setting = new Database({ 
-    "filename": path.join(db_file_path, "db_setting.db"),
-    "autoload": true
-})
+const db_setting = function () {
+    new Database({ 
+        "filename": path.join(db_file_path, "db_setting.db"),
+        "autoload": true
+    })
+}
 
 /*
     db promise

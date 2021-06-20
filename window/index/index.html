@@ -6,6 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simple Doc</title>
     <link rel="stylesheet" type="text/css" href="../../pubUI.css"/>
+    <style>
+
+    </style>
 </head>
 <body>
     <div class="header">
@@ -19,49 +22,72 @@
 
 
     <script>
-        const { ipcRenderer } = require("electron")
+        const { ipcRenderer, remote } = require("electron")
         const { db_project } = require("../../mainProcessFunc/nedb.js")
+        const timeToDate = require("../../utils/timestampToDateTime.js")
 
         window.onload = () => {
+            window.win_objs = remote.getGlobal("win_objs")
+            window.win_self_id = 0 // 当前窗口分配的id
+            window.win_parent_id = "" // 父窗口id
+
             createList()
         }
 
-        // 监听刷新事件
-        ipcRenderer.on("index_refresh", (event, arg) => {
+        // options
+        ipcRenderer.on("options", (event, arg) => {
+            window.win_self_id   = arg.relationship.win_self_id   ? arg.relationship.win_self_id   : ''
+            window.win_parent_id = arg.relationship.win_parent_id ? arg.relationship.win_parent_id : ''
+        })
 
+        // 监听刷新事件
+        ipcRenderer.on("refresh_data", (event, arg) => {
             createList()
         })
 
-        function createList () {
-            const targetListDom = document.getElementById("block_list")
-            let tmp_list = ''
-            db_project.find({}, (err, docs) => {
-              console.log("aaa ===>", err)
+        function createList () {    
+            db_project().find({}).sort({"create_time": 1}).exec((err, docs) => {
+              console.log("aaa ===>", docs)
 
                 if (err == null) {
+                    let tmp_list = ''
                     for (let i=0; i<docs.length; i++) {
                         tmp_list += `
-                            <li class="block_list_item" ids="${docs[i]._id}" style="background:url(${docs[i].img})">
-                                <div>${docs[i].name}</div>
-                                <div>${docs[i].describe}</div>
-                                <div>${docs[i].create_time}</div>
-                                <div onclick="exportXlsx('${docs[i]._id}')">导出为xlsx</div>
+                            <li class="block_list_item" onclick="gotoDocIndex('${docs[i]._id}','${docs[i].name}')" ids="${docs[i]._id}" style="background:url(${docs[i].img})">
+                                <div>
+                                    <h2 class="block_item_line">${docs[i].name}</h2>
+                                    <h5 class="block_item_line">${docs[i].describe}</h5>
+                                    <h5 class="block_item_line">${timeToDate(docs[i].create_time)}</h5>
+                                </div>
+                                <div class="block_item_line button" onclick="exportXlsx('${docs[i]._id}')">导出为xlsx</div>
                             </li>
                         `
                     }
-                    targetListDom.innerHTML = tmp_list
+                    document.getElementById("block_list").innerHTML = tmp_list
                 }
             })
         }
 
         function addProject () {
             ipcRenderer.send("createWindow", {
+                "relationship": { "win_parent_id": window.win_self_id },
                 "window": "projectAddEdit",
                 "data": {
                     "mode": "add"
                 }
             })
         }
+    
+        function gotoDocIndex (_id, name) {
+            ipcRenderer.send("createWindow", {
+                "relationship": { "win_parent_id": window.win_self_id },
+                "window": "docIndex",
+                "data": {
+                    "_id": _id,
+                    "name": name
+                }
+            })
+        }        
 
         function exportXlsx (_id) {
 

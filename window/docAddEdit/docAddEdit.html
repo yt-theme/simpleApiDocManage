@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文档添加编辑</title>
+    <link rel="stylesheet" type="text/css" href="../../pubUI.css"/>
+</head>
+<body>
+    <div>
+        <ul class="form_container">
+            <li class="form_item">
+                <span class="label">所属模块</span>
+                <input id="docModule" class="input"/>
+            </li>
+            <li class="form_item">
+                <span class="label">api名称</span>
+                <input id="apiName" class="input"/>
+            </li>
+            <li class="form_item">
+                <span class="label">作用描述</span>
+                <div>
+                    <textarea id="affect" class="textarea"></textarea>
+                </div>
+            </li>
+            <li class="form_item">
+                <span class="label">入参</span>
+                <div>
+                    <textarea id="params" class="textarea" placeholder="params"></textarea><br/>
+                    <textarea id="headers" class="textarea" placeholder="headers"></textarea><br/>
+                    <textarea id="bodys" class="textarea" placeholder="body"></textarea>
+                </div>
+            </li>
+            <li class="form_item">
+                <span class="label">出参</span>
+                <div>
+                    <textarea id="output" class="textarea"></textarea>
+                </div>
+            </li>
+            <li class="form_item">
+                <span class="label"></span>
+                <button class="button" onclick="save()">确定</button>
+            </li>
+        </ul>
+    </div>
+    <script>
+        const { ipcRenderer, remote } = require("electron")
+        const { db_doc } = require("../../mainProcessFunc/nedb.js")
+        const timeToDate = require("../../utils/timestampToDateTime.js")
+
+        window.onload = function () {
+            window.win_objs = remote.getGlobal("win_objs")
+            window.win_self_id = ""
+            window.win_parent_id = ""
+        }
+
+        let mode = ''
+        ipcRenderer.on('options',(event, arg) => {
+            window.win_self_id   = arg.relationship.win_self_id   ? arg.relationship.win_self_id   : ''
+            window.win_parent_id = arg.relationship.win_parent_id ? arg.relationship.win_parent_id : ''
+            mode = arg.data.mode
+            if (mode == 'add') {
+                document.title = "文档添加"
+            }
+            else if (mode == 'edit') {
+                document.title = "文档编辑"
+            }
+        })
+
+        function save () {
+            const module_id = document.getElementById("docModule").getAttribute("module_id")
+            const name      = document.getElementById("apiName").value
+            const affect    = document.getElementById("affect").value
+            const params    = document.getElementById("params").value
+            const headers   = document.getElementById("headers").value
+            const body     = document.getElementById("bodys").value
+            const output    = document.getElementById("output").value
+
+            db_doc.insert({
+                "module_id": module_id,
+                "name": name,
+                "affect": affect,
+                "params": params,
+                "headers": headers,
+                "body": body,
+                "output": output,
+            }, (err, docs) => {
+                if (err == null) {
+                    // 关闭此窗口
+                    remote.getCurrentWindow().close()
+                    // 通知主窗口更新数据
+                    ipcRenderer.send("call_index_refresh", { "window": "" })
+                }
+            })
+        }
+
+    </script>
+</body>
+</html>

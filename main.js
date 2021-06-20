@@ -11,7 +11,11 @@ let tray = null
 // ===================================================================
 app.whenReady().then(() => {
     createTray()
-    global.index_window = createWindow['index']()
+    global.index_window = createWindow['index']({
+        "relationship": { "win_parent_id": 0 },
+        "window": "index",
+        "data": {}
+    })
 })
 
 app.on('window-all-closed', function () {
