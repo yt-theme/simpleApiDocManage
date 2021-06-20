@@ -17,8 +17,38 @@ ipcMain.on("destoryWindow", (event, arg) => {
     }
 })
 
-// 通知主窗口刷新
-ipcMain.on("call_index_refresh", (event, arg) => {
+// 通知父窗口刷新
+ipcMain.on("call_parent_refresh", (event, arg) => {
     const window_id = arg.window_id
     global.win_objs[window_id] && global.win_objs[window_id].webContents.send("refresh_data", "ok")
+
+})
+
+// 通知此类型窗口刷新
+ipcMain.on("call_types_refresh", (event, arg) => {
+    const window_id = arg.window_id     // 参数二选一
+    const window_type = arg.window_type // 参数二选一
+    if (window_id) {
+        let type = ""
+        // 1.查此id对应的type
+        for (let ite in global.win_types) {
+            if (ite == window_id) {
+                type = global.win_types[ite].type 
+            }
+        }
+        // 将此type的窗口全部执行refresh方法
+        for (let ite in global.win_types) {
+            if (global.win_types[ite].type == type) {
+                global.win_types[ite].window.webContents.send("refresh_data", "ok")
+            }
+        }
+    }
+    else if (window_type) {
+        for (let ite in global.win_types) {
+            if (global.win_types[ite].type == window_type) {
+                global.win_types[ite].window.webContents.send("refresh_data", "ok")
+            }
+        }
+    }
+
 })

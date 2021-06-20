@@ -71,7 +71,7 @@
                     // 关闭此窗口
                     // remote.getCurrentWindow().close()
                     // 通知主窗口更新数据
-                    ipcRenderer.send("call_index_refresh", { "window_id": window.win_parent_id })
+                    ipcRenderer.send("call_types_refresh", { "window_id": window.win_parent_id })
                     ipcRenderer.send("destoryWindow", { "relationship": { "win_self_id": window.win_self_id } })
                 }
             })
