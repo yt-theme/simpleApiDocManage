@@ -55,6 +55,8 @@
         ipcRenderer.on('options',(event, arg) => {
             window.win_self_id   = arg.relationship.win_self_id   ? arg.relationship.win_self_id   : ''
             window.win_parent_id = arg.relationship.win_parent_id ? arg.relationship.win_parent_id : ''
+            window.project_id    = arg.project_id // 所属项目id
+            window.project_name  = arg.data.name
             document.title = "文档主页（" + arg.data.name + "）"
         })
 
@@ -82,6 +84,7 @@
             ipcRenderer.send("createWindow", {
                 "relationship": { "win_parent_id": window.win_self_id },
                 "window": "docAddEdit",
+                "project_id": window.project_id,
                 "data": {
                     "mode": "add"
                 }
@@ -93,7 +96,10 @@
             ipcRenderer.send("createWindow", {
                 "relationship": { "win_parent_id": window.win_self_id },
                 "window": "moduleIndex",
-                "data": {}
+                "project_id": window.project_id,
+                "data": {
+                    "name": window.project_name
+                }
             })
         }
 

@@ -8,22 +8,101 @@
     <link rel="stylesheet" type="text/css" href="../../pubUI.css"/>
 </head>
 <body>
+    <div class="block_container">
+        <!-- 主体搜索区域 -->
+        <div class="moudle_search">
+            <input id="moudle_search_input" class="input" placeholder="模块名" oninput="search()"/>
+            <button class="button" onclick="add()">+添加</button>
+            <button class="button" onclick="search()">搜索</button>
+            <button class="button" onclick="reset()">重置搜索</button>
+        </div>
+        <!-- 数据列表 -->
+        <div class="module_datalist">
+            <table id="module_datalist_tb" class="module_datalist_tb">
+
+            </table>
+        </div>
+    </div>
+
     <script>
         const { ipcRenderer, remote } = require("electron")
         const { db_module, db_doc } = require("../../mainProcessFunc/nedb.js")
         const timeToDate = require("../../utils/timestampToDateTime.js")
 
         window.onload = function () {
-            window.win_objs = remote.getGlobal("win_objs")
-            window.win_self_id = ""
+            window.win_objs      = remote.getGlobal("win_objs")
+            window.win_self_id   = ""
             window.win_parent_id = ""
         }
 
         ipcRenderer.on('options',(event, arg) => {
             window.win_self_id   = arg.relationship.win_self_id   ? arg.relationship.win_self_id   : ''
             window.win_parent_id = arg.relationship.win_parent_id ? arg.relationship.win_parent_id : ''
+            window.project_id    = arg.project_id
             document.title = "模块管理（" + arg.data.name + "）"
+
+            // 检索模块
+            queryModuleList()
         })
+
+        function add () {
+            const val = document.getElementById("moudle_search_input").value
+            if (!val) {
+                return false
+            }
+            db_module().insert({
+                "project_id": window.project_id,
+                "name": val,
+                "create_time": new Date().getTime()
+            }, (err, docs) => {
+                if (err == null) {
+                    queryModuleList()
+                }
+            })
+        }
+
+        function search () {
+
+        }
+
+        function reset () {
+
+        }
+
+        function queryModuleList () {
+            db_module().find({
+                "project_id": window.project_id
+            }).sort({"create_time": -1}).exec((err, docs) => {
+                let tmp_dom = `
+                    <tr>
+                        <td>模块名称</td>
+                        <td>文档数量</td>
+                        <td></td>
+                    </tr>
+                `
+                docs.forEach((ite, ind) => {
+                    tmp_dom += `
+                        <tr>
+                            <td>${ite.name}</td>
+                            <td></td>
+                            <td>
+                                <button class="button" onclick="module_edit('${ite._id}')">编辑</button>    
+                                <button class="button" onclick="module_delete('${ite._id}')">删除</button>    
+                            </td>
+                        </tr>
+                    `
+                })
+                document.getElementById("module_datalist_tb").innerHTML = tmp_dom
+            })
+        }
+
+        function module_edit (_id) {
+
+        }
+
+        function module_delete (_id) {
+
+        }
     </script>
 </body>
 </html>

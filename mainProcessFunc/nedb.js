@@ -1,6 +1,6 @@
 const path = require("path")
 const os = require("os")
-const db_file_path = path.join(os.homedir(), "simpleDoc")
+const db_file_path = path.join(os.homedir(), "simple_doc")
 const Database = require("nedb")
 
 // project
@@ -13,7 +13,7 @@ const db_project = function () {
 
 // doc
 const db_doc = function () {
-    new Database({ 
+    return new Database({ 
         "filename": path.join(db_file_path, "db_doc.db"),
         "autoload": true
     })
@@ -21,7 +21,7 @@ const db_doc = function () {
 
 // module
 const db_module = function () {
-    new Database({ 
+    return new Database({ 
         "filename": path.join(db_file_path, "db_module.db"),
         "autoload": true
     })
@@ -29,7 +29,7 @@ const db_module = function () {
 
 // setting
 const db_setting = function () {
-    new Database({ 
+    return new Database({ 
         "filename": path.join(db_file_path, "db_setting.db"),
         "autoload": true
     })

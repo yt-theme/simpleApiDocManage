@@ -8,7 +8,7 @@ body {
     background-color: #2F343F;
     padding: 10px;
 }
-body * {
+span, p, div, input, select, tr, td, a, form, button {
     color: #e1e1e7;
 }
 ul {
@@ -86,7 +86,7 @@ li {
     border: none;
     border-radius: 2px;
     text-align: center;
-    padding: 2px 30px;
+    padding: 2px 15px;
     cursor: pointer;
     
 }
@@ -127,4 +127,36 @@ li {
 }
 .doc_datalist_td {
     padding: 10px;
+}
+
+.select_input_container {
+    position: relative;
+}
+.select_input_input {
+
+}
+.select_input_ul {
+    position: absolute;
+    top:20px;
+    left:0px;
+    display:none;
+    width: 199px;
+    height: 90px;
+    background-color: #e1e1e7;
+    color: #2F343F !important;
+    overflow: auto;
+}
+.select_input_li {
+    cursor: pointer;
+}
+
+.module_datalist_tb {
+    width: 100%;
+    margin-top: 10px;
+}
+.module_datalist_tb tr {
+    border-bottom: 1px solid #e1e1e7;
+}
+.module_datalist_tb tr td {
+    height: 30px;
 }

@@ -12,7 +12,12 @@
         <ul class="form_container">
             <li class="form_item">
                 <span class="label">所属模块</span>
-                <input id="docModule" class="input"/>
+                <span class="select_input_container">
+                    <input id="docModule" class="select_input_input input" onclick="clickModuleInput()"/>
+                    <ul id="docModule_list" class="select_input_ul">
+
+                    </ul>
+                </span>
             </li>
             <li class="form_item">
                 <span class="label">api名称</span>
@@ -46,19 +51,22 @@
     </div>
     <script>
         const { ipcRenderer, remote } = require("electron")
-        const { db_doc } = require("../../mainProcessFunc/nedb.js")
+        const { db_module, db_doc } = require("../../mainProcessFunc/nedb.js")
         const timeToDate = require("../../utils/timestampToDateTime.js")
 
         window.onload = function () {
             window.win_objs = remote.getGlobal("win_objs")
             window.win_self_id = ""
             window.win_parent_id = ""
+            window.cur_selected_moduleId = ""
+            window.cur_selected_moduleName = ""
         }
 
         let mode = ''
         ipcRenderer.on('options',(event, arg) => {
             window.win_self_id   = arg.relationship.win_self_id   ? arg.relationship.win_self_id   : ''
             window.win_parent_id = arg.relationship.win_parent_id ? arg.relationship.win_parent_id : ''
+            window.project_id    = arg.project_id // 所属项目id
             mode = arg.data.mode
             if (mode == 'add') {
                 document.title = "文档添加"
@@ -66,25 +74,54 @@
             else if (mode == 'edit') {
                 document.title = "文档编辑"
             }
+
+            queryModuleList()
         })
 
+        // 检索模块数据
+        function queryModuleList () {
+            db_module().find({
+                "project_id": window.project_id
+            }).sort({ "create_time": -1 }).exec((err, docs) => {
+                let tmp_dom = ""
+                docs.forEach((ite, ind) => {
+                    tmp_dom += `
+                        <li class="select_input_li" onclick="selectModule('${ite._id}', '${ite.name}')">${ite.name}</li>
+                    `
+                })
+
+                document.getElementById("docModule_list").innerHTML = tmp_dom
+            })
+        }
+
+        function clickModuleInput () {
+            document.getElementById("docModule_list").style.display = "inline-block"
+        }
+
+        function selectModule (_id, name) {
+            window.cur_selected_moduleId = _id
+            window.cur_selected_moduleName = name
+            document.getElementById("docModule_list").style.display = "none"
+            document.getElementById("docModule").value = name
+        }
+
         function save () {
-            const module_id = document.getElementById("docModule").getAttribute("module_id")
             const name      = document.getElementById("apiName").value
             const affect    = document.getElementById("affect").value
             const params    = document.getElementById("params").value
             const headers   = document.getElementById("headers").value
-            const body     = document.getElementById("bodys").value
+            const body      = document.getElementById("bodys").value
             const output    = document.getElementById("output").value
 
             db_doc.insert({
-                "module_id": module_id,
-                "name": name,
-                "affect": affect,
-                "params": params,
-                "headers": headers,
-                "body": body,
-                "output": output,
+                "project_id":   window.project_id,
+                "module_id":    window.cur_selected_moduleId,
+                "name":         name,
+                "affect":       affect,
+                "params":       params,
+                "headers":      headers,
+                "body":         body,
+                "output":       output,
             }, (err, docs) => {
                 if (err == null) {
                     // 关闭此窗口

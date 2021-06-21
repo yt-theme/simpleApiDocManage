@@ -82,6 +82,9 @@
             ipcRenderer.send("createWindow", {
                 "relationship": { "win_parent_id": window.win_self_id },
                 "window": "docIndex",
+                "project_id": _id,
+                "module_id": "",
+                "doc_id": "",
                 "data": {
                     "_id": _id,
                     "name": name

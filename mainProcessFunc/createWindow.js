@@ -139,14 +139,8 @@ module.exports = {
         // win.webContents.openDevTools()
         win.once('ready-to-show',() => {
             win.show()
-            // 存储窗口
-            const self_id = uuid()
-            global.win_objs[self_id] = win
-            let tmp_data = null
-            if (data) {
-                tmp_data = { ...data, "relationship": { "win_parent_id": data.relationship.win_parent_id, "win_self_id": self_id } }
-                win.webContents.send('options', tmp_data)
-            }
+            const tmp_data = readyToShowFunc(win, "moduleIndex", data)
+            win.webContents.send('options', tmp_data)
         })
 
         return win
