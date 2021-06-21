@@ -8,7 +8,7 @@ body {
     background-color: #2F343F;
     padding: 10px;
 }
-span, p, div, input, select, tr, td, a, form, button {
+span, p, div, input, select, tr, td, a, form, button, li {
     color: #e1e1e7;
 }
 ul {
@@ -141,12 +141,13 @@ li {
     left:0px;
     display:none;
     width: 199px;
-    height: 90px;
+    height: 199px;
     background-color: #e1e1e7;
     color: #2F343F !important;
     overflow: auto;
 }
 .select_input_li {
+    color: #2F343F;
     cursor: pointer;
 }
 

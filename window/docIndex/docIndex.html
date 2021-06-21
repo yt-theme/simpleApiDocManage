@@ -18,7 +18,7 @@
         <!-- 模块选择侧边栏 -->
         <div class="doc_sidebar">
             <ul id="doc_sidebar_list" class="sidebar_list">
-
+                <li class="doc_sidebar_li" onclick="clickSidebarModule(this, '-1')">全部</li>
             </ul>
         </div>
         <!-- 主体 -->
@@ -26,7 +26,6 @@
             <!-- 主体搜索区域 -->
             <div class="doc_search">
                 <input id="doc_search_input" class="input" placeholder="api搜索" oninput="search()"/>
-                <button class="button" onclick="search()">搜索</button>
                 <button class="button" onclick="reset()">重置搜索</button>
             </div>
             <!-- 数据列表 -->
@@ -48,8 +47,6 @@
             window.win_self_id   = ""
             window.win_parent_id = ""
             window.cur_module_id = "-1"
-            queryModuleList()
-            search()
         }
 
         ipcRenderer.on('options',(event, arg) => {
@@ -58,25 +55,27 @@
             window.project_id    = arg.project_id // 所属项目id
             window.project_name  = arg.data.name
             document.title = "文档主页（" + arg.data.name + "）"
+
+            // 初始化数据及样式
+            reset()
         })
 
         // 查询模块列表显示到侧边栏
         function queryModuleList () {
-            let tmp_dom = `
-                <li class="doc_sidebar_li" onclick="clickSidebarModule('-1')">
-                    全部
-                </li>
-            `
-            db_module.find({}, (err, docs) => {
-                for (let i=0; i<docs.length; i++) {
-                    tmp_dom += `
-                        <li class="doc_sidebar_li" onclick="clickSidebarModule('${docs[i]._id}')">
-                            ${docs[i].name}
-                        </li>
-                    `
-                }
+            return new Promise((resolve, reject) => {
+                db_module().find({}).sort({"create_time": -1}).exec((err, docs) => {
+                    if (err == null) {
+                        let tmp_dom = `<li class="doc_sidebar_li" onclick="clickSidebarModule(this, '-1')">全部</li>`
+                        for (let i=0; i<docs.length; i++) {
+                            tmp_dom += `<li class="doc_sidebar_li" onclick="clickSidebarModule(this, '${docs[i]._id}')">${docs[i].name}</li>`
+                        }
+                        document.getElementById("doc_sidebar_list").innerHTML = tmp_dom
+                        resolve(docs)
+                    } else {
+                        reject(err)
+                    }
+                })
             })
-            document.getElementById("doc_sidebar_list").innerHTML = tmp_dom
         }
 
         // 打开添加文档
@@ -86,7 +85,8 @@
                 "window": "docAddEdit",
                 "project_id": window.project_id,
                 "data": {
-                    "mode": "add"
+                    "mode": "add",
+                    "name": window.project_name
                 }
             })
         }
@@ -104,41 +104,74 @@
         }
 
         // 点击侧边栏模块列表
-        function clickSidebarModule (_id) {
+        function clickSidebarModule (_this_, _id) {
             window.cur_module_id = _id
+            let dom_arr = document.getElementsByClassName("doc_sidebar_li")
+            for (let i=0; i<dom_arr.length; i++) {
+                dom_arr[i].style.backgroundColor = "#2F343F"
+                dom_arr[i].style.color = "#e1e1e7"
+            }
+            _this_.style.backgroundColor = "#e1e1e7"
+            _this_.style.color = "#2F343F"
             // 如是是全部
             if (_id == "-1") {
-
+                search()
             }
             // 如果不是全部
             else {
-                
+                search()
             }
         }
 
         // 搜索
         function search () {
             const module_id = window.cur_module_id
-            const name      = document.getElementById("doc_search_input").value
-            db_doc.find({
-                "module_id": module_id,
-                "name":      name
-            }, (err, docs) =>{
-                randerTableList(docs)
+            const input_val = document.getElementById("doc_search_input").value
+            return new Promise((resolve, reject) => {
+                let paramsObj = {
+                    $and: [ 
+                        { "module_id": module_id },
+                        { 
+                            $or: [
+                                { "affect": { $regex: new RegExp(input_val) } },
+                                { "url": { $regex: new RegExp(input_val) } }
+                            ]
+                        }
+                    ]                
+                }
+                // 1. 判断module_id为全部则删除模块搜索条件
+                if (module_id == -1) {
+                    delete paramsObj["$and"][0].module_id
+                }
+                db_doc().find(paramsObj, (err, docs) =>{
+                    if (err == null) {
+                        randerTableList(docs)
+                        resolve(docs)
+                    } else {
+                        reject(err)
+                    }
+                })
             })
         }
         
         // 重置
         function reset () {
-
+            document.getElementById("doc_search_input").value = ""
+            window.cur_module_id = "-1"
+            queryModuleList().then((res) => {
+                // 侧边栏默认点击第一项
+                const sidebar_first_dom = document.getElementsByClassName("doc_sidebar_li")[0]
+                sidebar_first_dom.style.backgroundColor = "#e1e1e7"
+                sidebar_first_dom.style.color = "#2F343F"
+            })
+            search()
         }
 
         // 渲染主列表
         function randerTableList (dataObjArr) {
             let tmp_dom = `
                 <tr class="doc_datalist_tr">
-                    <td class="doc_datalist_td">所属模块</td>
-                    <td class="doc_datalist_td">api名称</td>
+                    <td class="doc_datalist_td">api路由</td>
                     <td class="doc_datalist_td">作用</td>
                     <td class="doc_datalist_td">创建时间</td>
                     <td class="doc_datalist_td">操作</td>
@@ -147,11 +180,30 @@
             for (let i=0; i<dataObjArr.length; i++) {
                 tmp_dom += `
                     <tr class="doc_datalist_tr">
-                        <td class="doc_datalist_td"></td>    
+                        <td class="doc_datalist_td">${dataObjArr[i].url}</td>    
+                        <td class="doc_datalist_td">${dataObjArr[i].affect}</td>    
+                        <td class="doc_datalist_td">${timeToDate(dataObjArr[i].create_time)}</td>    
+                        <td class="doc_datalist_td">
+                            <button class="button" onclick="editDoc('${dataObjArr[i]._id}')">编辑</button>
+                            <button class="button" onclick="openWithNewWindow('${dataObjArr[i]._id}')">新窗口打开</button>
+                        </td>    
                     </tr>
                 `
             }
             document.getElementById("doc_datalist_tb").innerHTML = tmp_dom
+        }
+
+        function editDoc(_id) {
+
+        }
+
+        function openWithNewWindow(_id) {
+
+        }
+
+        function refresh () {
+            queryModuleList()
+            search()
         }
 
     </script>

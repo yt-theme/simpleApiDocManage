@@ -13,20 +13,27 @@
             <li class="form_item">
                 <span class="label">所属模块</span>
                 <span class="select_input_container">
-                    <input id="docModule" class="select_input_input input" onclick="clickModuleInput()"/>
+                    <input id="docModule" class="select_input_input input"
+                        onclick="clickModuleInput()"
+                        oninput="typeModuleInput(event)"
+                        onkeyup="keyupModuleInput(event)"/>
                     <ul id="docModule_list" class="select_input_ul">
 
                     </ul>
                 </span>
             </li>
             <li class="form_item">
-                <span class="label">api名称</span>
-                <input id="apiName" class="input"/>
+                <span class="label">作用</span>
+                <input id="affect" class="input"/>
             </li>
             <li class="form_item">
-                <span class="label">作用描述</span>
+                <span class="label">api路由</span>
+                <input id="apiUrl" class="input"/>
+            </li>
+            <li class="form_item">
+                <span class="label">简介</span>
                 <div>
-                    <textarea id="affect" class="textarea"></textarea>
+                    <textarea id="describe" class="textarea"></textarea>
                 </div>
             </li>
             <li class="form_item">
@@ -67,12 +74,13 @@
             window.win_self_id   = arg.relationship.win_self_id   ? arg.relationship.win_self_id   : ''
             window.win_parent_id = arg.relationship.win_parent_id ? arg.relationship.win_parent_id : ''
             window.project_id    = arg.project_id // 所属项目id
+            window.project_name  = arg.data.name
             mode = arg.data.mode
             if (mode == 'add') {
-                document.title = "文档添加"
+                document.title = "文档添加（" + arg.data.name + "）"
             }
             else if (mode == 'edit') {
-                document.title = "文档编辑"
+                document.title = "文档编辑（" + arg.data.name + "）"
             }
 
             queryModuleList()
@@ -83,51 +91,91 @@
             db_module().find({
                 "project_id": window.project_id
             }).sort({ "create_time": -1 }).exec((err, docs) => {
-                let tmp_dom = ""
-                docs.forEach((ite, ind) => {
-                    tmp_dom += `
-                        <li class="select_input_li" onclick="selectModule('${ite._id}', '${ite.name}')">${ite.name}</li>
-                    `
-                })
-
-                document.getElementById("docModule_list").innerHTML = tmp_dom
+                if (err == null) {
+                    window.moduleDataList = docs
+                    randerModuleList(docs)
+                }
             })
         }
 
+        // ================================================================
+        /*
+            渲染模块数据
+        */
+        function randerModuleList (docs) {
+            let tmp_dom = ""
+            docs.forEach((ite, ind) => {
+                tmp_dom += `<li class="select_input_li" onclick="selectModule('${ite._id}', '${ite.name}')">${ite.name}</li>`
+            })
+            document.getElementById("docModule_list").innerHTML = tmp_dom
+        }
+        /*
+            module点击时
+        */
         function clickModuleInput () {
             document.getElementById("docModule_list").style.display = "inline-block"
         }
-
+        /*
+            module输入时
+        */
+        function typeModuleInput (e) {
+            const val = e.target.value
+            // 前端搜索
+            let tmp_arr = []
+            window.moduleDataList.forEach((ite, ind) => {
+                if (ite.name.indexOf(val) != -1) {
+                    tmp_arr.push(ite)
+                }
+            })
+            randerModuleList(tmp_arr)
+        }
+        /*
+            module键盘抬起时
+        */
+        function keyupModuleInput (e) {
+            if (e.keyCode == 13) {
+                if (document.getElementById("docModule").value) {
+                    document.getElementById("docModule_list").style.display = "none"
+                }
+            }
+        }
+        /*
+            点击选择器项时
+        */
         function selectModule (_id, name) {
             window.cur_selected_moduleId = _id
             window.cur_selected_moduleName = name
             document.getElementById("docModule_list").style.display = "none"
             document.getElementById("docModule").value = name
         }
+        // ================================================================
 
         function save () {
-            const name      = document.getElementById("apiName").value
+            const url       = document.getElementById("apiUrl").value
             const affect    = document.getElementById("affect").value
+            const describe  = document.getElementById("describe").value
             const params    = document.getElementById("params").value
             const headers   = document.getElementById("headers").value
             const body      = document.getElementById("bodys").value
             const output    = document.getElementById("output").value
 
-            db_doc.insert({
+            db_doc().insert({
                 "project_id":   window.project_id,
                 "module_id":    window.cur_selected_moduleId,
-                "name":         name,
+                "url":          url,
                 "affect":       affect,
+                "describe":     describe,
                 "params":       params,
                 "headers":      headers,
                 "body":         body,
                 "output":       output,
+                "create_time":  new Date().getTime()
             }, (err, docs) => {
                 if (err == null) {
                     // 关闭此窗口
                     remote.getCurrentWindow().close()
                     // 通知主窗口更新数据
-                    ipcRenderer.send("call_index_refresh", { "window": "" })
+                    ipcRenderer.send("call_types_refresh", { "window_id": window.win_parent_id })
                 }
             })
         }
