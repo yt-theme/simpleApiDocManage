@@ -72,8 +72,8 @@ li {
 }
 .textarea {
     width: 100%;
-    height: 20vh;
-    min-height: 100px;
+    height: 10vh;
+    min-height: 50px;
     background-color: #00000000;
     border: 1px solid #e1e1e7;
     color: #e1e1e7;
@@ -109,10 +109,6 @@ li {
 .doc_sidebar_li {
     padding: 3px 6px;
     cursor: pointer;
-}
-.doc_sidebar_li:hover {
-    background-color: #e1e1e7;
-    color: #2F343F;
 }
 .doc_main {
     width: 100%;

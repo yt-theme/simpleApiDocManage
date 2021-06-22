@@ -60,6 +60,12 @@
             reset()
         })
 
+        // 监听刷新事件
+        ipcRenderer.on("refresh_data", (event, arg) => {
+            // 初始化数据及样式
+            reset()
+        })
+
         // 查询模块列表显示到侧边栏
         function queryModuleList () {
             return new Promise((resolve, reject) => {
@@ -184,8 +190,8 @@
                         <td class="doc_datalist_td">${dataObjArr[i].affect}</td>    
                         <td class="doc_datalist_td">${timeToDate(dataObjArr[i].create_time)}</td>    
                         <td class="doc_datalist_td">
-                            <button class="button" onclick="editDoc('${dataObjArr[i]._id}')">编辑</button>
-                            <button class="button" onclick="openWithNewWindow('${dataObjArr[i]._id}')">新窗口打开</button>
+                            <button class="button" onclick="edit_doc('${dataObjArr[i]._id}')">编辑</button>
+                            <button class="button" onclick="openWithNewWindow('${dataObjArr[i]._id}')">打开</button>
                         </td>    
                     </tr>
                 `
@@ -193,17 +199,12 @@
             document.getElementById("doc_datalist_tb").innerHTML = tmp_dom
         }
 
-        function editDoc(_id) {
+        function edit_doc(_id) {
 
         }
 
         function openWithNewWindow(_id) {
 
-        }
-
-        function refresh () {
-            queryModuleList()
-            search()
         }
 
     </script>

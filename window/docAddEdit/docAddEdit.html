@@ -51,7 +51,6 @@
                 </div>
             </li>
             <li class="form_item">
-                <span class="label"></span>
                 <button class="button" onclick="save()">确定</button>
             </li>
         </ul>
@@ -151,33 +150,72 @@
         // ================================================================
 
         function save () {
-            const url       = document.getElementById("apiUrl").value
-            const affect    = document.getElementById("affect").value
-            const describe  = document.getElementById("describe").value
-            const params    = document.getElementById("params").value
-            const headers   = document.getElementById("headers").value
-            const body      = document.getElementById("bodys").value
-            const output    = document.getElementById("output").value
-
-            db_doc().insert({
-                "project_id":   window.project_id,
-                "module_id":    window.cur_selected_moduleId,
-                "url":          url,
-                "affect":       affect,
-                "describe":     describe,
-                "params":       params,
-                "headers":      headers,
-                "body":         body,
-                "output":       output,
-                "create_time":  new Date().getTime()
-            }, (err, docs) => {
+            
+            const moduel_name = document.getElementById("docModule").value
+            if (!moduel_name && !url) {
+                return false
+            }
+            
+            // 判断是否需要新增模块
+            db_module().count({
+                $and: [
+                    { "name": moduel_name },
+                    { "project_id": window.project_id }
+                ]
+            }, (err, count) => {
                 if (err == null) {
-                    // 关闭此窗口
-                    remote.getCurrentWindow().close()
-                    // 通知主窗口更新数据
-                    ipcRenderer.send("call_types_refresh", { "window_id": window.win_parent_id })
+                    if (count < 1) {
+                        // 无则新增
+                        db_module().insert({
+                            "project_id": window.project_id,
+                            "name": moduel_name,
+                            "create_time": new Date().getTime()
+                        }, (err1, docs) => {
+                            if (err1 == null) {
+                                window.cur_selected_moduleId = docs._id
+                                insertD()
+                            } else {
+
+                            }
+                        })
+                    }
+                } else {
+                    // 有则直接用选择的
+                    insertD()
                 }
             })
+
+            // 插入文档
+            function insertD () {
+                const url       = document.getElementById("apiUrl").value
+                const affect    = document.getElementById("affect").value
+                const describe  = document.getElementById("describe").value
+                const params    = document.getElementById("params").value
+                const headers   = document.getElementById("headers").value
+                const body      = document.getElementById("bodys").value
+                const output    = document.getElementById("output").value
+                // 新增文档
+                db_doc().insert({
+                    "project_id":   window.project_id,
+                    "module_id":    window.cur_selected_moduleId,
+                    "url":          url,
+                    "affect":       affect,
+                    "describe":     describe,
+                    "params":       params,
+                    "headers":      headers,
+                    "body":         body,
+                    "output":       output,
+                    "create_time":  new Date().getTime()
+                }, (err, docs) => {
+                    if (err == null) {
+                        // 通知主窗口更新数据
+                        ipcRenderer.send("call_types_refresh", { "window_id": window.win_parent_id })
+                        // 关闭此窗口
+                        remote.getCurrentWindow().close()
+                    }
+                })
+            }
+            
         }
 
     </script>
