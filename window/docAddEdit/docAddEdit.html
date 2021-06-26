@@ -39,8 +39,11 @@
             <li class="form_item">
                 <span class="label">入参</span>
                 <div>
+                    <p>params</p>
                     <textarea id="params" class="textarea" placeholder="params"></textarea><br/>
+                    <p>headers</p>
                     <textarea id="headers" class="textarea" placeholder="headers"></textarea><br/>
+                    <p>body</p>
                     <textarea id="bodys" class="textarea" placeholder="body"></textarea>
                 </div>
             </li>
@@ -73,6 +76,7 @@
             window.win_self_id   = arg.relationship.win_self_id   ? arg.relationship.win_self_id   : ''
             window.win_parent_id = arg.relationship.win_parent_id ? arg.relationship.win_parent_id : ''
             window.project_id    = arg.project_id // 所属项目id
+            window.doc_id        = arg.doc_id // 文档id
             window.project_name  = arg.data.name
             mode = arg.data.mode
             if (mode == 'add') {
@@ -80,6 +84,8 @@
             }
             else if (mode == 'edit') {
                 document.title = "文档编辑（" + arg.data.name + "）"
+                // 请求文档内容
+                queryDocData()
             }
 
             queryModuleList()
@@ -149,9 +155,33 @@
         }
         // ================================================================
 
+        // 请求文档内容
+        function queryDocData () {
+            db_doc().findOne({ "project_id": window.project_id, "_id": window.doc_id }, function (err, doc) {
+                if (err == null) {
+                       const dat = doc
+                       window.cur_selected_moduleId = dat.module_id
+                       document.getElementById("affect").value = dat.affect
+                       document.getElementById("apiUrl").value = dat.url 
+                       document.getElementById("describe").value = dat.describe 
+                       document.getElementById("params").value = dat.params
+                       document.getElementById("headers").value = dat.headers                        
+                       document.getElementById("bodys").value = dat.body
+                       document.getElementById("output").value = dat.output
+
+                        // 查询模块_id对应模块名称
+                       db_module().findOne({ "project_id": window.project_id, "_id": dat.module_id }, function (err1, doc1) {
+                            document.getElementById("docModule").value = doc1.name
+                       })
+
+                }
+            })
+        }
+
         function save () {
             
             const moduel_name = document.getElementById("docModule").value
+            const url = document.getElementById("apiUrl").value
             if (!moduel_name && !url) {
                 return false
             }
@@ -173,20 +203,20 @@
                         }, (err1, docs) => {
                             if (err1 == null) {
                                 window.cur_selected_moduleId = docs._id
-                                insertD()
+                                editD()
                             } else {
 
                             }
                         })
+                    } else {
+                        // 有则直接用选择的
+                        editD()
                     }
-                } else {
-                    // 有则直接用选择的
-                    insertD()
-                }
+                } 
             })
 
             // 插入文档
-            function insertD () {
+            function editD () {
                 const url       = document.getElementById("apiUrl").value
                 const affect    = document.getElementById("affect").value
                 const describe  = document.getElementById("describe").value
@@ -194,26 +224,59 @@
                 const headers   = document.getElementById("headers").value
                 const body      = document.getElementById("bodys").value
                 const output    = document.getElementById("output").value
-                // 新增文档
-                db_doc().insert({
-                    "project_id":   window.project_id,
-                    "module_id":    window.cur_selected_moduleId,
-                    "url":          url,
-                    "affect":       affect,
-                    "describe":     describe,
-                    "params":       params,
-                    "headers":      headers,
-                    "body":         body,
-                    "output":       output,
-                    "create_time":  new Date().getTime()
-                }, (err, docs) => {
-                    if (err == null) {
-                        // 通知主窗口更新数据
-                        ipcRenderer.send("call_types_refresh", { "window_id": window.win_parent_id })
-                        // 关闭此窗口
-                        remote.getCurrentWindow().close()
-                    }
-                })
+
+                // 判断新增或编辑
+                if (window.doc_id) {
+                    // 编辑
+                    db_doc().update({
+                        "project_id": window.project_id,
+                        "_id": window.doc_id
+                    }, {
+                        "$set": {
+                            "module_id":    window.cur_selected_moduleId,
+                            "url":          url,
+                            "affect":       affect,
+                            "describe":     describe,
+                            "params":       params,
+                            "headers":      headers,
+                            "body":         body,
+                            "output":       output,
+                            "update_time":  new Date().getTime()
+                        }
+                    }, (err, docs) => {
+                        if (err == null) {
+                            overFunc()
+                        }
+                    })
+                } else {
+                    // 新增文档
+                    db_doc().insert({
+                        "project_id":   window.project_id,
+                        "module_id":    window.cur_selected_moduleId,
+                        "url":          url,
+                        "affect":       affect,
+                        "describe":     describe,
+                        "params":       params,
+                        "headers":      headers,
+                        "body":         body,
+                        "output":       output,
+                        "create_time":  new Date().getTime()
+                    }, (err, docs) => {
+                        if (err == null) {
+                            overFunc()
+                        }
+                    })
+                }
+
+                
+            }
+
+            // 更改后结束
+            function overFunc () {
+                // 通知主窗口更新数据
+                ipcRenderer.send("call_types_refresh", { "window_id": window.win_parent_id })
+                // 关闭此窗口
+                remote.getCurrentWindow().close()
             }
             
         }

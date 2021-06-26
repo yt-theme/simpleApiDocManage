@@ -69,7 +69,7 @@
         // 查询模块列表显示到侧边栏
         function queryModuleList () {
             return new Promise((resolve, reject) => {
-                db_module().find({}).sort({"create_time": -1}).exec((err, docs) => {
+                db_module().find({"project_id": window.project_id}).sort({"create_time": -1}).exec((err, docs) => {
                     if (err == null) {
                         let tmp_dom = `<li class="doc_sidebar_li" onclick="clickSidebarModule(this, '-1')">全部</li>`
                         for (let i=0; i<docs.length; i++) {
@@ -136,7 +136,10 @@
             return new Promise((resolve, reject) => {
                 let paramsObj = {
                     $and: [ 
-                        { "module_id": module_id },
+                        { 
+                            "project_id": window.project_id,
+                            "module_id": module_id
+                        },
                         { 
                             $or: [
                                 { "affect": { $regex: new RegExp(input_val) } },
@@ -190,8 +193,8 @@
                         <td class="doc_datalist_td">${dataObjArr[i].affect}</td>    
                         <td class="doc_datalist_td">${timeToDate(dataObjArr[i].create_time)}</td>    
                         <td class="doc_datalist_td">
-                            <button class="button" onclick="edit_doc('${dataObjArr[i]._id}')">编辑</button>
-                            <button class="button" onclick="openWithNewWindow('${dataObjArr[i]._id}')">打开</button>
+                            <button class="button" onclick="edit_doc('${dataObjArr[i]._id}', '${dataObjArr[i].url}')">编辑</button>
+                            <button class="button" onclick="openWithNewWindow('${dataObjArr[i]._id}', '${dataObjArr[i].url}')">打开</button>
                         </td>    
                     </tr>
                 `
@@ -199,12 +202,30 @@
             document.getElementById("doc_datalist_tb").innerHTML = tmp_dom
         }
 
-        function edit_doc(_id) {
-
+        function edit_doc(_id, url) {
+            ipcRenderer.send("createWindow", {
+                "relationship": { "win_parent_id": window.win_self_id },
+                "window": "docAddEdit",
+                "project_id": window.project_id,
+                "doc_id": _id,
+                "data": {
+                    "mode": "edit",
+                    "name": window.project_name + " -- " + url,
+                    
+                }
+            })
         }
 
-        function openWithNewWindow(_id) {
-
+        function openWithNewWindow(_id, url) {
+            ipcRenderer.send("createWindow", {
+                "relationship": { "win_parent_id": window.win_self_id },
+                "window": "docDetail",
+                "project_id": window.project_id,
+                "doc_id": _id,
+                "data": {
+                    "name": window.project_name + " -- " + url,
+                }
+            })
         }
 
     </script>

@@ -24,7 +24,7 @@
     </div>
 
     <script>
-        const { ipcRenderer, remote } = require("electron")
+        const { ipcRenderer, remote, dialog } = require("electron")
         const { db_module, db_doc } = require("../../mainProcessFunc/nedb.js")
         const timeToDate = require("../../utils/timestampToDateTime.js")
 
@@ -71,7 +71,7 @@
         function queryModuleList () {
             db_module().find({
                 "project_id": window.project_id
-            }).sort({"create_time": -1}).exec((err, docs) => {
+            }).sort({"create_time": -1}).exec(async (err, docs) => {
                 let tmp_dom = `
                     <tr>
                         <td>模块名称</td>
@@ -82,25 +82,96 @@
                 docs.forEach((ite, ind) => {
                     tmp_dom += `
                         <tr>
-                            <td>${ite.name}</td>
-                            <td></td>
                             <td>
-                                <button class="button" onclick="module_edit('${ite._id}')">编辑</button>    
-                                <button class="button" onclick="module_delete('${ite._id}')">删除</button>    
+                                <span id="td_name_${ite._id}" style="display:inline-block;width:150px">${ite.name}</span>
+                                <!-- 编辑用 -->
+                                <input id="td_input_${ite._id}" class="input" style="display:none;width:150px;height:100%"/>
+                            </td>
+                            <td id="doc_${ite._id}"></td>
+                            <td>
+                                <button id="td_btn_edit_${ite._id}" class="button" onclick="module_edit('${ite._id}', '${ite.name}')">编辑</button>    
+                                <button id="td_btn_delete_${ite._id}" class="button" onclick="module_delete('${ite._id}', '${ite.name}')">删除</button>   
+                                <!-- 编辑用 -->
+                                <button id="td_btn_save_${ite._id}" class="button" style="display:none" onclick="module_edit_save('${ite._id}')">保存</button>    
+                                <button id="td_btn_cancel_${ite._id}" class="button" style="display:none" onclick="module_edit_cancel('${ite._id}')">取消</button>    
                             </td>
                         </tr>
                     `
                 })
                 document.getElementById("module_datalist_tb").innerHTML = tmp_dom
+
+                // 异步获取文档数量
+                for (let ite of docs) {
+                    const count = await getDocCountAsync(ite._id)
+                    console.log("count =>", count)
+                    document.getElementById(`doc_${ite._id}`).innerHTML = count
+                }
             })
         }
 
-        function module_edit (_id) {
-
+        // db_doc count promise
+        function getDocCountAsync (_id) {
+            return new Promise((resolve, reject) => {
+                db_doc().count({ "module_id": _id, "project_id": window.project_id }, function (err, count) {
+                    if (err == null) {
+                        resolve(count)
+                    } else {
+                        reject(err)
+                    }
+                })
+            })
         }
 
-        function module_delete (_id) {
+        function module_edit (_id, name) {
+            // ...
+            const dom_name = document.getElementById(`td_name_${_id}`)
+            const dom_input = document.getElementById(`td_input_${_id}`)
+            dom_name.style.display = "none"
+            dom_input.style.display = "inline-block"
+            dom_input.value = name
+            // ...
+            const dom_btn_edit = document.getElementById(`td_btn_edit_${_id}`)
+            const dom_btn_delete = document.getElementById(`td_btn_delete_${_id}`)
+            const dom_btn_save = document.getElementById(`td_btn_save_${_id}`)
+            const dom_btn_cancel = document.getElementById(`td_btn_cancel_${_id}`)
+            dom_btn_edit.style.display = "none"
+            dom_btn_delete.style.display = "none"
+            dom_btn_save.style.display = "inline-block"
+            dom_btn_cancel.style.display = "inline-block"
+            
+        }
+        function module_edit_save (_id) {
+            const val = document.getElementById(`td_input_${_id}`).value
+            db_module().update({"_id": _id, "project_id": window.project_id}, { "$set": { "name": val } }, {}, function (err, numReplaced) {
+                if (err == null) {
+                    queryModuleList()
+                }
+            })
+        }
+        function module_edit_cancel (_id) {
+            // ...
+            const dom_name = document.getElementById(`td_name_${_id}`)
+            const dom_input = document.getElementById(`td_input_${_id}`)
+            dom_name.style.display = "inline-block"
+            dom_input.style.display = "none"
+            dom_input.value = ""
+            // ...
+            const dom_btn_edit = document.getElementById(`td_btn_edit_${_id}`)
+            const dom_btn_delete = document.getElementById(`td_btn_delete_${_id}`)
+            const dom_btn_save = document.getElementById(`td_btn_save_${_id}`)
+            const dom_btn_cancel = document.getElementById(`td_btn_cancel_${_id}`)
+            dom_btn_edit.style.display = "inline"
+            dom_btn_delete.style.display = "inline"
+            dom_btn_save.style.display = "none"
+            dom_btn_cancel.style.display = "none"
+        }
 
+        function module_delete (_id, name) {
+            if (confirm(`确定删除${name}?`)) {
+
+            } else {
+
+            }
         }
     </script>
 </body>

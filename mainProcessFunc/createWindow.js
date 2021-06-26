@@ -38,7 +38,7 @@ module.exports = {
     // 主页
     index: function (data) {
         const win = new BrowserWindow({
-            width: 1300,
+            width: 700,
             height: 600,
             webPreferences: {
                 nodeIntegration: true,
@@ -47,7 +47,7 @@ module.exports = {
             }
         })
         win.loadFile('window/index/index.html')
-        win.webContents.openDevTools()
+        // win.webContents.openDevTools()
         // 向窗口发送options
         win.once('ready-to-show',() => {
             win.show()
@@ -118,6 +118,28 @@ module.exports = {
         win.once('ready-to-show',() => {
             win.show()
             const tmp_data = readyToShowFunc(win, "docAddEdit", data)
+            win.webContents.send('options', tmp_data)
+        })
+
+        return win
+    },
+
+    // 文档新增编辑
+    docDetail: function (data) {
+        const win = new BrowserWindow({
+            width: 900,
+            height: 600,
+            webPreferences: {
+                nodeIntegration: true,
+                contextIsolation: false,
+                enableRemoteModule: true
+            }
+        })
+        win.loadFile('window/docDetail/docDetail.html')
+        // win.webContents.openDevTools()
+        win.once('ready-to-show',() => {
+            win.show()
+            const tmp_data = readyToShowFunc(win, "docDetail", data)
             win.webContents.send('options', tmp_data)
         })
 

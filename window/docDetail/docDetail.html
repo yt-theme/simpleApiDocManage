@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文档内容</title>
+    <link rel="stylesheet" type="text/css" href="../../pubUI.css"/>
+    <style>
+        li {
+            margin-bottom: 30px;
+        }
+        h2 {
+
+        }
+        .content {
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <ul>
+            <li>
+                <h2>所属模块:</h2>
+                <div id="docModule" class="content"></div>
+            </li>
+            <li>
+                <h2>作用:</h2>
+                <div id="affect" class="content"></div>
+            </li>
+            <li>
+                <h2>api路由:</h2>
+                <div id="apiUrl" class="content"></div>
+            </li>
+            <li>
+                <h2>简介:</h2>
+                <div id="describe" class="content"></div>
+            </li>
+            <li>
+                <h2>params:</h2>
+                <div id="params" class="content"></div>
+            </li>
+            <li>
+                <h2>headers:</h2>
+                <div id="headers" class="content"></div>
+            </li>
+            <li>
+                <h2>bodys:</h2>
+                <div id="bodys" class="content"></div>
+            </li>
+            <li>
+                <h2>output:</h2>
+                <div id="output" class="content"></div>
+            </li>
+        </ul>
+    </div>
+    <script>
+        const { ipcRenderer, remote } = require("electron")
+        const { db_module, db_doc } = require("../../mainProcessFunc/nedb.js")
+        const timeToDate = require("../../utils/timestampToDateTime.js")
+
+        window.onload = function () {
+            window.win_objs = remote.getGlobal("win_objs")
+            window.win_self_id = ""
+            window.win_parent_id = ""
+            window.cur_selected_moduleId = ""
+            window.cur_selected_moduleName = ""
+        }
+
+        ipcRenderer.on('options',(event, arg) => {
+            window.win_self_id   = arg.relationship.win_self_id   ? arg.relationship.win_self_id   : ''
+            window.win_parent_id = arg.relationship.win_parent_id ? arg.relationship.win_parent_id : ''
+            window.project_id    = arg.project_id // 所属项目id
+            window.doc_id        = arg.doc_id // 文档id
+            window.project_name  = arg.data.name
+            document.title = "文档详情（" + arg.data.name + "）"
+
+            queryDocData()
+        })
+
+
+        // 请求文档内容
+        function queryDocData () {
+            db_doc().findOne({ "project_id": window.project_id, "_id": window.doc_id }, function (err, doc) {
+                if (err == null) {
+                       const dat = doc
+                       console.log("dat ============>", dat)
+                       window.cur_selected_moduleId = dat.module_id
+                       document.getElementById("affect").innerText   = dat.affect
+                       document.getElementById("apiUrl").innerText   = dat.url 
+                       document.getElementById("describe").innerText = dat.describe 
+                       document.getElementById("params").innerText   = dat.params
+                       document.getElementById("headers").innerText  = dat.headers                        
+                       document.getElementById("bodys").innerText    = dat.body
+                       document.getElementById("output").innerText   = dat.output
+
+                        // 查询模块_id对应模块名称
+                       db_module().findOne({ "project_id": window.project_id, "_id": dat.module_id }, function (err1, doc1) {
+                            document.getElementById("docModule").value = doc1.name
+                       })
+
+                }
+            })
+        }
+    </script>
+</body>
+</html>
