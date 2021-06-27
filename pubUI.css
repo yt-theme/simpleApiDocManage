@@ -5,7 +5,7 @@
     box-sizing: border-box;
 }
 body {
-    background-color: #2F343F;
+    background-color: #2f3f3d;
     padding: 10px;
 }
 span, p, div, input, select, tr, td, a, form, button, li {
@@ -35,9 +35,9 @@ li {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    width: 20%;
-    min-width: 150px;
-    max-width: 300px;
+    width: 280px;
+    /* min-width: 150px;
+    max-width: 300px; */
     border: 1px solid #e1e1e7;
     border-radius: 2px;
     padding: 10px;
@@ -81,7 +81,7 @@ li {
     outline: none;
 }
 .button {
-    color: #2F343F;
+    color: #2f3f3d;
     background-color: #e1e1e7;
     border: none;
     border-radius: 2px;
@@ -139,11 +139,11 @@ li {
     width: 199px;
     height: 199px;
     background-color: #e1e1e7;
-    color: #2F343F !important;
+    color: #2f3f3d !important;
     overflow: auto;
 }
 .select_input_li {
-    color: #2F343F;
+    color: #2f3f3d;
     cursor: pointer;
 }
 

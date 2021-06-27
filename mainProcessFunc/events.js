@@ -33,13 +33,15 @@ ipcMain.on("call_types_refresh", (event, arg) => {
         // 1.查此id对应的type
         for (let ite in global.win_types) {
             if (ite == window_id) {
-                type = global.win_types[ite].type 
+                type = global.win_types[ite].type
+                break
             }
         }
         // 将此type的窗口全部执行refresh方法
         for (let ite in global.win_types) {
             if (global.win_types[ite].type == type) {
                 global.win_types[ite].window.webContents.send("refresh_data", "ok")
+                break
             }
         }
     }
@@ -47,6 +49,7 @@ ipcMain.on("call_types_refresh", (event, arg) => {
         for (let ite in global.win_types) {
             if (global.win_types[ite].type == window_type) {
                 global.win_types[ite].window.webContents.send("refresh_data", "ok")
+                break
             }
         }
     }

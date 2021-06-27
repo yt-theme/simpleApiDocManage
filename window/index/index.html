@@ -23,6 +23,8 @@
 
     <script>
         const { ipcRenderer, remote } = require("electron")
+        const Menu = remote.Menu
+        const MenuItem = remote.MenuItem
         const { db_project } = require("../../mainProcessFunc/nedb.js")
         const timeToDate = require("../../utils/timestampToDateTime.js")
 
@@ -96,6 +98,20 @@
 
         }
 
+        // 项目右键菜单
+        function initProjectContextMenu () {
+            const menu = new Menu()
+            menu.append(new MenuItem({
+                label: "删除",
+                click: (e) => {
+
+                }
+            }))
+        }
+
+        window.addEventListener("contextmenu", (e) => {
+            console.log("e ============>", e)
+        })
 
     </script>
 

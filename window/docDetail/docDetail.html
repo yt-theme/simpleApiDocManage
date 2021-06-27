@@ -16,40 +16,43 @@
         .content {
             padding: 10px;
         }
+        .items {
+            border-bottom: 1px dashed #e1e1e1;
+        }
     </style>
 </head>
 <body>
     <div>
         <ul>
-            <li>
+            <li class="items">
                 <h2>所属模块:</h2>
                 <div id="docModule" class="content"></div>
             </li>
-            <li>
+            <li class="items">
                 <h2>作用:</h2>
                 <div id="affect" class="content"></div>
             </li>
-            <li>
+            <li class="items">
                 <h2>api路由:</h2>
                 <div id="apiUrl" class="content"></div>
             </li>
-            <li>
+            <li class="items">
                 <h2>简介:</h2>
                 <div id="describe" class="content"></div>
             </li>
-            <li>
+            <li class="items">
                 <h2>params:</h2>
                 <div id="params" class="content"></div>
             </li>
-            <li>
+            <li class="items">
                 <h2>headers:</h2>
                 <div id="headers" class="content"></div>
             </li>
-            <li>
+            <li class="items">
                 <h2>bodys:</h2>
                 <div id="bodys" class="content"></div>
             </li>
-            <li>
+            <li class="items">
                 <h2>output:</h2>
                 <div id="output" class="content"></div>
             </li>
@@ -85,7 +88,6 @@
             db_doc().findOne({ "project_id": window.project_id, "_id": window.doc_id }, function (err, doc) {
                 if (err == null) {
                        const dat = doc
-                       console.log("dat ============>", dat)
                        window.cur_selected_moduleId = dat.module_id
                        document.getElementById("affect").innerText   = dat.affect
                        document.getElementById("apiUrl").innerText   = dat.url 
@@ -97,7 +99,7 @@
 
                         // 查询模块_id对应模块名称
                        db_module().findOne({ "project_id": window.project_id, "_id": dat.module_id }, function (err1, doc1) {
-                            document.getElementById("docModule").value = doc1.name
+                            document.getElementById("docModule").innerText = doc1.name
                        })
 
                 }

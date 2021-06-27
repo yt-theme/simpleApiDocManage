@@ -38,8 +38,8 @@ module.exports = {
     // 主页
     index: function (data) {
         const win = new BrowserWindow({
-            width: 700,
-            height: 600,
+            width: 620,
+            height: 630,
             webPreferences: {
                 nodeIntegration: true,
                 contextIsolation: false,
