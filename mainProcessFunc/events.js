@@ -40,8 +40,12 @@ ipcMain.on("call_types_refresh", (event, arg) => {
         // 将此type的窗口全部执行refresh方法
         for (let ite in global.win_types) {
             if (global.win_types[ite].type == type) {
-                global.win_types[ite].window.webContents.send("refresh_data", "ok")
-                break
+                try {
+                    global.win_types[ite].window.webContents.send("refresh_data", "ok")
+                    break
+                } catch (e) {
+                    console.log("call_types_refresh err =====>", e)
+                }
             }
         }
     }
