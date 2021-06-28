@@ -106,7 +106,7 @@ module.exports = {
     docAddEdit: function (data) {
         const win = new BrowserWindow({
             width: 600,
-            height: 600,
+            height: 670,
             webPreferences: {
                 nodeIntegration: true,
                 contextIsolation: false,

@@ -37,6 +37,10 @@
                 <div id="apiUrl" class="content"></div>
             </li>
             <li class="items">
+                <h2>方法:</h2>
+                <div id="method" class="content"></div>
+            </li>
+            <li class="items">
                 <h2>简介:</h2>
                 <div id="describe" class="content"></div>
             </li>
@@ -91,6 +95,7 @@
                        window.cur_selected_moduleId = dat.module_id
                        document.getElementById("affect").innerText   = dat.affect
                        document.getElementById("apiUrl").innerText   = dat.url 
+                       document.getElementById("method").innerText   = dat.method 
                        document.getElementById("describe").innerText = dat.describe 
                        document.getElementById("params").innerText   = dat.params
                        document.getElementById("headers").innerText  = dat.headers                        
