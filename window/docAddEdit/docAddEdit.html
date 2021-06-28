@@ -31,6 +31,26 @@
                 <input id="apiUrl" class="input"/>
             </li>
             <li class="form_item">
+                <span class="label">方法</span>
+                <select id="method" class="select">
+                    <option value="GET">GET</option>
+                    <option value="POST">POST</option>
+                    <option value="PUT">PUT</option>
+                    <option value="PATCH">PATCH</option>
+                    <option value="DELETE">DELETE</option>
+                    <option value="COPY">COPY</option>
+                    <option value="HEAD">HEAD</option>
+                    <option value="OPTIONS">OPTIONS</option>
+                    <option value="LINK">LINK</option>
+                    <option value="UNLINK">UNLINK</option>
+                    <option value="PURGE">PURGE</option>
+                    <option value="LOCK">LOCK</option>
+                    <option value="UNLOCK">UNLOCK</option>
+                    <option value="PROPFIND">PROPFIND</option>
+                    <option value="VIEW">VIEW</option>
+                </select>
+            </li>
+            <li class="form_item">
                 <span class="label">简介</span>
                 <div>
                     <textarea id="describe" class="textarea"></textarea>
@@ -161,13 +181,14 @@
                 if (err == null) {
                        const dat = doc
                        window.cur_selected_moduleId = dat.module_id
-                       document.getElementById("affect").value = dat.affect
-                       document.getElementById("apiUrl").value = dat.url 
+                       document.getElementById("affect").value   = dat.affect
+                       document.getElementById("apiUrl").value   = dat.url 
+                       document.getElementById("method").value   = dat.method 
                        document.getElementById("describe").value = dat.describe 
-                       document.getElementById("params").value = dat.params
-                       document.getElementById("headers").value = dat.headers                        
-                       document.getElementById("bodys").value = dat.body
-                       document.getElementById("output").value = dat.output
+                       document.getElementById("params").value   = dat.params
+                       document.getElementById("headers").value  = dat.headers                        
+                       document.getElementById("bodys").value    = dat.body
+                       document.getElementById("output").value   = dat.output
 
                         // 查询模块_id对应模块名称
                        db_module().findOne({ "project_id": window.project_id, "_id": dat.module_id }, function (err1, doc1) {
@@ -218,6 +239,7 @@
             // 插入文档
             function editD () {
                 const url       = document.getElementById("apiUrl").value
+                const method    = document.getElementById("method").value
                 const affect    = document.getElementById("affect").value
                 const describe  = document.getElementById("describe").value
                 const params    = document.getElementById("params").value
@@ -235,6 +257,7 @@
                         "$set": {
                             "module_id":    window.cur_selected_moduleId,
                             "url":          url,
+                            "method":       method,
                             "affect":       affect,
                             "describe":     describe,
                             "params":       params,
